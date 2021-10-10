@@ -1,65 +1,69 @@
-import DiscordJS, { Intents, Interaction } from 'discord.js'
+import DiscordJS, { Intents } from 'discord.js'
 import dotenv from 'dotenv'
-import { add, ping, play } from './slash-commands'
-import { joinVoiceChannel } from '@discordjs/voice'
+import { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } from '@discordjs/voice'
 
 dotenv.config()
+const prefix = '!'
+const player = createAudioPlayer();
 
+// setup client for connecting to discord
 const client = new DiscordJS.Client({
   intents: [
     Intents.FLAGS.GUILDS,
     Intents.FLAGS.GUILD_MESSAGES,
+    Intents.FLAGS.GUILD_VOICE_STATES,
   ]
 })
 
 client.on('ready', () => {
   console.log('The bot is ready')
-
-  const guildId = '895352675804278784';
-  const guild = client.guilds.cache.get(guildId)
-  let commands
-
-  if (guild) {
-    commands = guild.commands
-  } else {
-    commands = client.application?.commands
-  }
-
-  commands?.create(ping)
-  commands?.create(add)
-  commands?.create(play)
 })
 
-client.on('interactionCreate', async (interaction) => {
-  if (!interaction.isCommand()) {
-    return
-  }
-  const { commandName, options } = interaction
+player.on(AudioPlayerStatus.Playing, () => {
+  console.log('The audio player has started playing!');
+});
 
-  if (commandName === 'ping') {
-    interaction.reply({
-      content: 'pong',
-      ephemeral: true, // this means that only you will see reply 
-    })
-  }
+// commands
+client.on('messageCreate', message => {
+  if (!message.content.startsWith(prefix) || message.author.bot) return;
 
-  if (commandName === 'add') {
-    const num1 = options.getNumber('num1')!
-    const num2 = options.getNumber('num2')!
+  // all arguments of message
+  const args = message.content.slice(prefix.length).split(/ +/);
+  // get first argument of mesage
+  const command = args.shift()?.toLocaleLowerCase();
 
-    interaction.reply({
-      content: `The sum is ${num1 + num2}`,
-      ephemeral: true, // this means that only you will see reply 
-    })
-  }
+  if (command === 'play') {
+    // get link by shifting arguments
+    const url = args.shift();
+    // check if link was provided
+    if (!url) {
+      message.channel.send('Link was not provided')
+      return
+    }
 
-  if (commandName === 'play') {
-    const url = options.getString('url')!
-    console.log(url)
-    interaction.reply({
-      content: `playing`,
-      ephemeral: true, // this means that only you will see reply 
-    })
+    // create voiceChannel 
+    const voiceChannel = message.member?.voice.channel;
+
+    // check if user is in voice channel
+    if (voiceChannel) {
+      //create connection to voice channel
+      const connection = joinVoiceChannel({
+        channelId: voiceChannel.id,
+        guildId: voiceChannel.guild.id,
+        adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+        selfDeaf: false,
+      });
+      // create audio resurce playable by discord bot
+      const resource = createAudioResource('./test-mp3/letsgo.mp3');
+
+      // subscribe to player to be able to listen to song, play song
+      connection?.subscribe(player);
+      player.play(resource);
+      message.channel.send(`Playing: ${url}`)
+
+    } else {
+      message.reply('Join a voice channel then try again!');
+    }
   }
 })
 

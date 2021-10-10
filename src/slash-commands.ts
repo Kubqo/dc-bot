@@ -17,11 +17,6 @@ export const add = {
   }]
 }
 
-export const ping = {
-  name: 'ping',
-  description: 'Replies with pong.',
-}
-
 export const play = {
   name: 'play',
   description: 'Play music from ytbe',
