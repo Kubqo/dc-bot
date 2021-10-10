@@ -1,7 +1,6 @@
 import DiscordJS, { Intents } from 'discord.js'
 import dotenv from 'dotenv'
 import { createAudioPlayer, AudioPlayerStatus } from '@discordjs/voice'
-import ytdl from 'ytdl-core';
 import { playSong } from './commands/play-song';
 
 dotenv.config()
@@ -28,6 +27,7 @@ player.on(AudioPlayerStatus.Playing, () => {
 // commands
 client.on('messageCreate', message => {
   if (!message.content.startsWith(prefix) || message.author.bot) return;
+  
   // all arguments of message
   const args = message.content.slice(prefix.length).split(/ +/);
   // get first argument of mesage

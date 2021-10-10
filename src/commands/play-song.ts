@@ -3,7 +3,6 @@ import { joinVoiceChannel, createAudioResource, AudioPlayer } from '@discordjs/v
 import ytdl from 'ytdl-core';
 import fs from 'fs'
 
-
 export const playSong = async (args: string[], message: DiscordJS.Message, player: AudioPlayer) => {
   // get link by shifting arguments
   const url = args.shift();
@@ -13,12 +12,16 @@ export const playSong = async (args: string[], message: DiscordJS.Message, playe
     return
   }
 
-  message.reply(`Searching for ${url}`)
-  await downloadVideo(url)
-  console.log('Successfully downloaded!');
   const voiceChannel = message.member?.voice.channel;
+
   // check if user is in voice channel
   if (voiceChannel) {
+
+    // download mp3
+    message.reply(`Searching for ${url}`)
+    await downloadAudio(url)
+    console.log('Successfully downloaded!');
+
     //create connection to voice channel
     const connection = joinVoiceChannel({
       channelId: voiceChannel.id,
@@ -39,8 +42,8 @@ export const playSong = async (args: string[], message: DiscordJS.Message, playe
   }
 }
 
-const downloadVideo = async (link: string) => {
-  const output_video = 'file.mp3';
+const downloadAudio = async (link: string) => {
+  const output_audio = 'file.mp3';
   let starttime = 0;
   return new Promise(function (resolve, reject) {
     const start = () => {
@@ -48,7 +51,7 @@ const downloadVideo = async (link: string) => {
         filter: "audioonly",
       });
 
-      stream.pipe(fs.createWriteStream(output_video));
+      stream.pipe(fs.createWriteStream(output_audio));
 
       stream.once("response", () => {
         starttime = Date.now();
@@ -66,9 +69,9 @@ const downloadVideo = async (link: string) => {
       });
 
       stream.on("end", () => {
-        resolve(output_video);
+        resolve(output_audio);
       });
-      
+
       stream.on("error", (error) => {
         try {
           throw new Error();
