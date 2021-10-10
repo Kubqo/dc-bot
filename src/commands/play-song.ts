@@ -1,5 +1,5 @@
 import DiscordJS from 'discord.js'
-import { joinVoiceChannel, createAudioResource, AudioPlayer } from '@discordjs/voice'
+import { joinVoiceChannel, createAudioResource, AudioPlayer, DiscordGatewayAdapterCreator } from '@discordjs/voice'
 import ytdl from 'ytdl-core';
 import fs from 'fs'
 
@@ -26,7 +26,7 @@ export const playSong = async (args: string[], message: DiscordJS.Message, playe
     const connection = joinVoiceChannel({
       channelId: voiceChannel.id,
       guildId: voiceChannel.guild.id,
-      adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+      adapterCreator: voiceChannel.guild.voiceAdapterCreator as unknown as DiscordGatewayAdapterCreator,
       selfDeaf: false,
     });
 
