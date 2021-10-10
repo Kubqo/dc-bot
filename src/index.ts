@@ -1,7 +1,10 @@
 import DiscordJS, { Intents } from 'discord.js'
 import dotenv from 'dotenv'
-import { createAudioPlayer, AudioPlayerStatus } from '@discordjs/voice'
+import { createAudioPlayer, AudioPlayerStatus, getVoiceConnection } from '@discordjs/voice'
 import { playSong } from './commands/play-song';
+import { stopSong } from './commands/stop-song';
+import { searchSong } from './commands/search-song';
+
 
 dotenv.config()
 const prefix = '!'
@@ -27,14 +30,21 @@ player.on(AudioPlayerStatus.Playing, () => {
 // commands
 client.on('messageCreate', message => {
   if (!message.content.startsWith(prefix) || message.author.bot) return;
-  
+
   // all arguments of message
   const args = message.content.slice(prefix.length).split(/ +/);
   // get first argument of mesage
   const command = args.shift()?.toLocaleLowerCase();
 
   if (command === 'play') {
-    playSong(args, message, player)
+    const url = args.shift();
+    playSong(url!, message, player);
+  }
+  if (command === 'stop') {
+    stopSong(message, player)
+  }
+  if (command === 'search') {
+    searchSong(args, message, player) 
   }
 })
 

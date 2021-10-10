@@ -3,9 +3,7 @@ import { joinVoiceChannel, createAudioResource, AudioPlayer, DiscordGatewayAdapt
 import ytdl from 'ytdl-core';
 import fs from 'fs'
 
-export const playSong = async (args: string[], message: DiscordJS.Message, player: AudioPlayer) => {
-  // get link by shifting arguments
-  const url = args.shift();
+export const playSong = async (url: string, message: DiscordJS.Message, player: AudioPlayer) => {
   // check if link was provided
   if (!url || !ytdl.validateURL(url)) {
     message.channel.send(url ? 'Link was not provided' : 'Incorrect url!')
@@ -16,9 +14,9 @@ export const playSong = async (args: string[], message: DiscordJS.Message, playe
 
   // check if user is in voice channel
   if (voiceChannel) {
-
     // download mp3
     message.reply(`Searching for ${url}`)
+    console.log(`Searching for ${url}`)
     await downloadAudio(url)
     console.log('Successfully downloaded!');
 
@@ -61,7 +59,10 @@ const downloadAudio = async (link: string) => {
         const percent = downloaded / total;
         const downloaded_minutes = (Date.now() - starttime) / 1000 / 60;
         const estimated_download_time = downloaded_minutes / percent - downloaded_minutes;
-        if (estimated_download_time.toFixed(2) >= '1.5') {
+
+        console.log(`downloaded ${downloaded}/${total}`)
+
+        if (estimated_download_time.toFixed(2) >= '0.5') {
           console.warn("Restarting the download...");
           stream.destroy();
           start();
@@ -73,12 +74,11 @@ const downloadAudio = async (link: string) => {
       });
 
       stream.on("error", (error) => {
-        try {
-          throw new Error();
-        } catch {
-          stream.destroy();
-          console.log(error);
-        }
+        console.log(error);
+        stream.destroy();
+        downloadAudio(link);
+        return
+
       });
     };
     start();
