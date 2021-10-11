@@ -4,6 +4,7 @@ import { playSong } from './play-song';
 import DiscordJS from 'discord.js'
 import { AudioPlayer } from '@discordjs/voice'
 import dotenv from 'dotenv'
+import { embedSong } from '../utils/createEmbed';
 
 dotenv.config()
 
@@ -15,7 +16,8 @@ var opts: youtubeSearch.YouTubeSearchOptions = {
 export const searchSong = async (args: string[], message: DiscordJS.Message, player: AudioPlayer) => {
   search(args.join(' '), opts, function (err, results) {
     if (err) return console.log(err);
-    console.dir(results);
+    const embed = embedSong(results![0], message);
+    message.channel.send({embeds: [embed]});
     playSong(results![0].link, message, player)
   });
 }
