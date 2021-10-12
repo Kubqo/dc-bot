@@ -19,7 +19,7 @@ const client = new DiscordJS.Client({
 })
 
 const config = {
-  prefix: '-'
+  prefix: '!'
 };
 
 const connections = new Map();
