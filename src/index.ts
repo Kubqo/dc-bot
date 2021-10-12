@@ -1,13 +1,13 @@
-import DiscordJS, { Intents } from 'discord.js'
+import DiscordJS, { Intents, VoiceChannel } from 'discord.js'
 import dotenv from 'dotenv'
-import { createAudioPlayer, AudioPlayer } from '@discordjs/voice'
 import { playSong } from './commands/play-song';
 import { stopSong } from './commands/stop-song';
 import { searchSong } from './commands/search-song';
-
+import { AudioManager } from 'discordaudio';
+import { skipSong } from './commands/skip-song';
+import { queue } from './commands/queue';
 
 dotenv.config()
-const prefix = '!'
 
 // setup client for connecting to discord
 const client = new DiscordJS.Client({
@@ -18,38 +18,45 @@ const client = new DiscordJS.Client({
   ]
 })
 
-let players: { id: string; player: AudioPlayer }[] = []
+const config = {
+  prefix: '-'
+};
+
+const connections = new Map();
+const audioManager = new AudioManager();
 
 client.on('ready', () => {
   console.log('The bot is ready')
-  client.guilds.cache.forEach(guild => players.push({ id: guild.id, player: createAudioPlayer() }));
   console.log('Logged on servers:')
   client.guilds.cache.forEach(guild => console.log(guild.name));
   console.log(`Total server: ${client.guilds.cache.size}`)
-  console.log(`Total players: ${players.length}`)
-
 })
 
 // commands
 client.on('messageCreate', message => {
-  if (!message.content.startsWith(prefix) || message.author.bot) return;
 
-  // all arguments of message
-  const args = message.content.slice(prefix.length).split(/ +/);
-  // get first argument of mesage
-  const command = args.shift()?.toLocaleLowerCase();
-  let player = players.find(player => player.id === message.guildId)!.player
+  if (message.author.bot || message.channel.type === `DM`) return;
+  if (!message.content.startsWith(config.prefix)) return;
 
-  console.log(`Executing at ${message.guild?.name}`)
-  if (command === 'play') {
-    const url = args.shift();
-    playSong(url!, message, player);
-  }
-  if (command === 'stop') {
-    stopSong(message, player)
-  }
-  if (command === 'search') {
-    searchSong(args, message, player)
+  let args = message.content.substring(config.prefix.length).split(" ");
+  const vc = connections.get(message.guild?.me?.voice.channel?.id);
+
+  switch (args[0].toLowerCase()) {
+    case 'play':
+      playSong(args[1], message, connections, audioManager)
+      break;
+    case 'skip':
+      skipSong(vc, message, audioManager)
+      break;
+    case 'stop':
+      stopSong(vc, message, audioManager)
+      break;
+    case 'queue':
+      queue(vc, message, audioManager)
+      break;
+    case 'search':
+      searchSong(args, message, connections ,audioManager)
+      break;
   }
 })
 
