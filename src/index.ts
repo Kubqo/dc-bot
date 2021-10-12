@@ -6,6 +6,7 @@ import { searchSong } from './commands/search-song';
 import { AudioManager } from 'discordaudio';
 import { skipSong } from './commands/skip-song';
 import { queue } from './commands/queue';
+import { help } from './commands/help';
 
 dotenv.config()
 
@@ -19,7 +20,7 @@ const client = new DiscordJS.Client({
 })
 
 const config = {
-  prefix: '!'
+  prefix: '-'
 };
 
 const connections = new Map();
@@ -55,7 +56,10 @@ client.on('messageCreate', message => {
       queue(vc, message, audioManager)
       break;
     case 'search':
-      searchSong(args, message, connections ,audioManager)
+      searchSong(args, message, connections, audioManager)
+      break;
+    case 'help':
+      help(message)
       break;
   }
 })
