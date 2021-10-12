@@ -15,3 +15,7 @@ To create container use command: <br>
 docker build -t discord-bot .
 ```
 
+To run the container use command: <br>
+```
+docker run discord-bot
+```
