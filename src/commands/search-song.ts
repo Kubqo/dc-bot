@@ -16,9 +16,16 @@ var opts: youtubeSearch.YouTubeSearchOptions = {
 export const searchSong = async (args: string[], message: DiscordJS.Message, player: AudioPlayer) => {
   search(args.join(' '), opts, function (err, results) {
     if (err) return console.log(err);
-    const embed = embedSong(results![0], message);
-    message.channel.send({embeds: [embed]});
+    
+    // check for embed
+    const voiceChannel = message.member?.voice.channel;
+    if (voiceChannel) {
+      const embed = embedSong(results![0], message);
+      message.channel.send({ embeds: [embed] });
+    }
+
     playSong(results![0].link, message, player)
+
   });
 }
 

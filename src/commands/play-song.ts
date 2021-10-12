@@ -38,6 +38,7 @@ export const playSong = async (url: string, message: DiscordJS.Message, player: 
     message.channel.send(`Playing now!`)
   } else {
     message.reply('Join a voice channel then try again!');
+    console.log('Join a voice channel then try again!')
   }
 }
 

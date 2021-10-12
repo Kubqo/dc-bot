@@ -40,6 +40,7 @@ client.on('messageCreate', message => {
   const command = args.shift()?.toLocaleLowerCase();
   let player = players.find(player => player.id === message.guildId)!.player
 
+  console.log(`Executing at ${message.guild?.name}`)
   if (command === 'play') {
     const url = args.shift();
     playSong(url!, message, player);
